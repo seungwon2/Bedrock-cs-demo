@@ -14,6 +14,7 @@ import * as subs from "aws-cdk-lib/aws-sns-subscriptions";
 export class BedrockCsDemoStack extends Stack {
   constructor(scope: Construct, id: string, props?: StackProps) {
     super(scope, id, props);
+    const email = this.node.tryGetContext("email");
     const infoTable = new dynamodb.Table(this, "information", {
       partitionKey: { name: "age", type: dynamodb.AttributeType.STRING },
       stream: dynamodb.StreamViewType.NEW_IMAGE,
@@ -25,9 +26,7 @@ export class BedrockCsDemoStack extends Stack {
     });
 
     // Create a subscription (e.g., to send notifications to an email)
-    myTopic.addSubscription(
-      new subs.EmailSubscription("your-email@example.com")
-    );
+    myTopic.addSubscription(new subs.EmailSubscription(email));
 
     //lambda
     const getdbLambda = new lambda.Function(this, "getdb", {
@@ -86,7 +85,7 @@ export class BedrockCsDemoStack extends Stack {
 
     snsLambda.addToRolePolicy(
       new iam.PolicyStatement({
-        actions: ["*"],
+        actions: ["sns:*"],
         resources: ["*"],
       })
     );
@@ -133,6 +132,10 @@ export class BedrockCsDemoStack extends Stack {
       defaultCorsPreflightOptions: {
         allowOrigins: apigateway.Cors.ALL_ORIGINS,
         allowMethods: apigateway.Cors.ALL_METHODS, // this is also the default
+        allowHeaders: [
+          "Origin, X-Api-Key, X-Requested-With, Content-Type, Accept, Authorization, access-control-allow-origin",
+        ],
+        allowCredentials: true,
       },
       cloudWatchRole: true,
       cloudWatchRoleRemovalPolicy: cdk.RemovalPolicy.DESTROY,

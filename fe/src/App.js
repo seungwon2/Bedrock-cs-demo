@@ -7,8 +7,6 @@ import Container from "react-bootstrap/Container";
 import Row from "react-bootstrap/Row";
 
 function App() {
-  console.log(reviews);
-
   const Wrapper = styled.div`
     display: flex;
     justify-content: center;
